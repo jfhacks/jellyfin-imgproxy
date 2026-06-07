@@ -1,0 +1,21 @@
+services:
+  imgproxy:
+    image: ghcr.io/imgproxy/imgproxy:latest
+    container_name: imgproxy
+    restart: always
+    ports:
+      - 127.0.0.1:18889:18889
+    volumes:
+      - /var/lib/jellyfin/metadata:/media/metadata:ro
+      - /var/lib/jellyfin/data/collections:/media/collections:ro
+    environment:
+      - IMGPROXY_BIND=0.0.0.0:18889
+      - IMGPROXY_MAX_SRC_RESOLUTION=3840
+      - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/media
+      - IMGPROXY_WEBP_EFFORT=2
+      - IMGPROXY_LOG_LEVEL=warn
+      - IMGPROXY_CLIENT_KEEP_ALIVE_TIMEOUT=90
+      - IMGPROXY_DOWNLOAD_TIMEOUT=10
+      - IMGPROXY_REQUESTS_QUEUE_SIZE=500
+      # - IMGPROXY_WORKERS=6
+      # - GOMAXPROCS=6
