@@ -10,7 +10,8 @@ services:
       - /var/lib/jellyfin/data/collections:/media/collections:ro
     environment:
       - IMGPROXY_BIND=0.0.0.0:18889
-      - IMGPROXY_MAX_SRC_RESOLUTION=3840
+      - IMGPROXY_MAX_SRC_RESOLUTION=100 # Megapixel
+      - IMGPROXY_MAX_RESULT_DIMENSION=3840
       - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/media
       - IMGPROXY_WEBP_EFFORT=2
       - IMGPROXY_LOG_LEVEL=warn

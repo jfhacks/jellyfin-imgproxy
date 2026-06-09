@@ -58,7 +58,8 @@ Add imgproxy to replace Jellyfin integrated image processing
       - /var/lib/jellyfin/data/collections:/media/collections:ro
     environment:
       - IMGPROXY_BIND=0.0.0.0:18889
-      - IMGPROXY_MAX_SRC_RESOLUTION=3840 # Maximum resolution that can be requested
+      - IMGPROXY_MAX_SRC_RESOLUTION=100 # Megapixel of SOURCE image
+      - IMGPROXY_MAX_RESULT_DIMENSION=3840 # Max resolution of generated image (longest side)
       - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/media
       - IMGPROXY_WEBP_EFFORT=2 # CPU power vs size - webP is small, keep effort low
       - IMGPROXY_LOG_LEVEL=warn # comment out to debug and see all requests
