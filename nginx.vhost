@@ -40,81 +40,28 @@ server {
     # Error code 404 is used for non GET request to forward them to jellyfin .e.g. update an image via POST
     error_page 404 = @jf_proxy;
 
-    # Backdrops and chapters need a lookup and use an index
-    location ~* ^/Items/(?<jf_id>[0-9a-f-]*)/Images/(?<img_type>Backdrop|Chapter)/(?<img_id>[0-9]*) {
+    # Split first 2 HEX for folder structure of nginx
+    location ~* ^/Items/(?<jf_id>[0-9a-f-]*)/Images/(?<img_type>Logo|Primary|Art|Thumb|Banner|Disc|Menu|Box|BoxRear|Backdrop|Chapter)/?(?<img_id>[0-9]*)? {
         if ($request_method != GET) {
             return 404;
         }
 
-        # No value -> set to 0 and imgproxy ignore it
+        # Set 0 to have no limit for a side. Will not overwrite limit set in imgproxy container
+        # Often clients send width and no height - keep the ratio
         set $w $arg_fillWidth$arg_width;
         if ($w = "") { set $w "0"; }
         set $h $arg_fillHeight$arg_height;
         if ($h = "") { set $h 0; }
         set $mw $arg_maxWidth;
         if ($mw = "") { set $mw "0"; }
-        # Disabled because on client used max parameters, on side will scale of them and width seems more accurate
         # set $mh $arg_maxHeight;
         # if ($mh = "") { set $mh 0; }
         set $mh 0;
-        
-        proxy_buffering on;
-        proxy_set_header Host $host;
-        # Go proxy to resolve and requests the image
+
         proxy_pass http://127.0.0.1:18887/resolve?type=image&jf_id=$jf_id&img_id=$img_id&img_type=$img_type&size=$resize;
         proxy_set_header Accept $http_accept;
         proxy_cache jfimg;
-        proxy_cache_key $path_without_query:$resize:$arg_tag:$http_accept;
-        proxy_cache_valid 200 30d;
-        proxy_cache_use_stale updating error timeout invalid_header http_500 http_502 http_503 http_504;
-
-        proxy_intercept_errors on;
-
-        # Adds header if cache was a hit or miss (nice info, can be removed)
-        add_header X-Cache-Status $upstream_cache_status;
-    }
-
-    # Split first 2 HEX for folder structure of nginx
-    location ~* ^/Items/(?<id_dir>[0-9a-f][0-9a-f])(?<jf_id>[0-9a-f-]*)/Images/(?<img_type>Logo|Primary|Art|Thumb|Banner|Disc|Menu|Box|BoxRear) {
-        if ($request_method != GET) {
-            return 404;
-        }
-
-        # Get full uuid
-        set $jf_id "$id_dir$jf_id";
-
-        set $w $arg_fillWidth$arg_width;
-        if ($w = "") { set $w "0"; }
-        set $h $arg_fillHeight$arg_height;
-        if ($h = "") { set $h 0; }
-        set $mw $arg_maxWidth;
-        if ($mw = "") { set $mw "0"; }
-        # set $mh $arg_maxHeight;
-        # if ($mh = "") { set $mh 0; }
-        set $mh 0;
-
-        # This can be removed and middleware will resolve it e.g. nginx can't access the images - remove imgproxy_file location as well
-        if (-f /var/lib/jellyfin/metadata/library/$id_dir/$jf_id/${img_file}.webp) {
-            rewrite ^ /_imgproxy_file?src=/metadata/library/$id_dir/$jf_id/${img_file}.webp last;
-        }
-        if (-f /var/lib/jellyfin/metadata/library/$id_dir/$jf_id/${img_file}.jpg) {
-            rewrite ^ /_imgproxy_file?src=/metadata/library/$id_dir/$jf_id/${img_file}.jpg last;
-        }
-        if (-f /var/lib/jellyfin/metadata/library/$id_dir/$jf_id/${img_file}.png) {
-            rewrite ^ /_imgproxy_file?src=/metadata/library/$id_dir/$jf_id/${img_file}.png last;
-        }
-        if (-f /var/lib/jellyfin/metadata/library/$id_dir/$jf_id/folder.jpg) {
-            rewrite ^ /_imgproxy_file?src=/metadata/library/$id_dir/$jf_id/folder.jpg last;
-        }
-        if (-f /var/lib/jellyfin/metadata/library/$id_dir/$jf_id/folder.png) {
-            rewrite ^ /_imgproxy_file?src=/metadata/library/$id_dir/$jf_id/folder.png last;
-        }
-
-        proxy_buffering on;
-        proxy_set_header Host $host;
-        proxy_pass http://127.0.0.1:18887/resolve?type=image&jf_id=$jf_id&img_type=$img_type&size=$resize;
-        proxy_set_header Accept $http_accept;
-        proxy_cache jfimg;
+        # Key that determants the cache
         proxy_cache_key $path_without_query:$resize:$arg_tag:$http_accept;
         proxy_cache_valid 200 30d;
         proxy_cache_use_stale updating error timeout invalid_header http_500 http_502 http_503 http_504;
@@ -123,22 +70,6 @@ server {
 
         add_header X-Cache-Status $upstream_cache_status;
     }
-
-    location = /_imgproxy_file {
-        internal;
-
-        proxy_buffering on;
-        add_header X-Cache-Status $upstream_cache_status;
-        proxy_pass http://127.0.0.1:18889/insecure/${resize}/plain/local://$arg_src;
-        proxy_set_header Accept $http_accept;
-        proxy_cache jfimg;
-        proxy_cache_key $path_without_query:$resize:$arg_tag:$http_accept;
-        proxy_cache_valid 200 30d;
-        proxy_cache_use_stale updating error timeout invalid_header http_500 http_502 http_503 http_504;
-
-        proxy_set_header Host 127.0.0.1;
-    }
-
 
     location @jf_proxy {
         # YOUR jellyfin upstream, so images can be updated
