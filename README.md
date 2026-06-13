@@ -91,7 +91,7 @@ Add imgproxy to replace Jellyfin integrated image processing
     ```
     2. Now start it `./img-proxy`
     3. Add a systemd or so to keep it running e.g. `img-proxy.service`<br>**Adjust YOUR_PATH_TO**
-    ```bash 
+    ```conf 
     [Unit]
     Description=Jellyfin Image Proxy
     After=network.target
