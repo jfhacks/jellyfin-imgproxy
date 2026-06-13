@@ -9,14 +9,15 @@ Add imgproxy to replace Jellyfin integrated image processing
 ## Why
 
 - Fast compared to Jellyfin
-- Options like formats
+- Options like JLX, AVIF and WEBP
 - nginx cache base on age or other rules (Jellyfin supports only all or nothing)
 - Smaller image sizes, controllable quality (hardcoded in most clients)
 - Secure - Jellyfin has no limits in place
     - Max size
-    - force formats/ configure supported arguments
-    - (Jellyfin `Images` endpoint is also unauthenticated available)
-- Every image that can;t be found for whatever reason will forward the request to Jellyfin to get normal behavior
+    - force formats/configure supported arguments
+    - Raster SVG
+    - (Jellyfin `Images` endpoint is also unauthenticated)
+- Every image that can't be found for whatever reason will forward the request to Jellyfin to get normal behavior
 
 **Overall it feels much faster and slower clients will notice a boost in less resource usage**
 
@@ -127,10 +128,6 @@ Tried it and it failed. Request went to proxy but header with image path was nev
 
 Check requested images. My guess is, it uses no size parameters at all or it bypasses the proxy. nginx config adds `x-cache-status` header, if proxy was used. `MISS` means the image was generated and `HIT` used nginx proxy cache.
 
-### Why WebP?
-
-It is small and fast, nearly all clients support it.
-
 ### How to clear cache?
 
 Every new upload gets new UUID tag, so it will deliver a new image. Header or cookie could be added. To delete cached images, clear the nginx cache folder.
@@ -138,7 +135,6 @@ Every new upload gets new UUID tag, so it will deliver a new image. Header or co
 ### How to run it on a Windows host?
 
 No, idea never used it and no interest
-
 
 ## Additional documentation
 
