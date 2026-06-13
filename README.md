@@ -61,13 +61,24 @@ Add imgproxy to replace Jellyfin integrated image processing
       - IMGPROXY_MAX_SRC_RESOLUTION=100 # Megapixel of SOURCE image
       - IMGPROXY_MAX_RESULT_DIMENSION=3840 # Max resolution of generated image (longest side)
       - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/media
-      - IMGPROXY_WEBP_EFFORT=2 # CPU power vs size - webP is small, keep effort low
       - IMGPROXY_LOG_LEVEL=warn # comment out to debug and see all requests
       - IMGPROXY_CLIENT_KEEP_ALIVE_TIMEOUT=90 # Some limits (never needed them)
       - IMGPROXY_DOWNLOAD_TIMEOUT=10 # Some limits (never needed them)
       - IMGPROXY_REQUESTS_QUEUE_SIZE=500 # Queue limit (Maybe increase it, if pages are huge and cache is often a MISS)
       - IMGPROXY_WORKERS=12 # Parallel worker (default 2x cores)
       #- MALLOC_ARENA_MAX=2 # https://docs.imgproxy.net/memory_usage_tweaks#malloc_arena_max
+
+      # Enable all formats and prefer a convert (worked for me)
+      - IMGPROXY_AUTO_WEBP=true
+      - IMGPROXY_ENFORCE_WEBP=true
+      - IMGPROXY_WEBP_EFFORT=2 # CPU power vs size - webP is small, keep effort low
+      - IMGPROXY_AUTO_AVIF=true
+      - IMGPROXY_ENFORCE_AVIF=true
+      - IMGPROXY_AUTO_JXL=true
+      - IMGPROXY_ENFORCE_JXL=true
+      - IMGPROXY_JXL_EFFORT=2 # CPU power vs size - webP is small, keep effort low
+      - IMGPROXY_FORMAT_QUALITY=webp=85,avif=85,jxl=85 # Set quality per format (will use header from client to only answer supported formats - webP works on most of them)
+      - IMGPROXY_ALWAYS_RASTERIZE_SVG=true # Raster SVG to get consitant behaviour (uses sanitize on SVG)
     ```
     
     </details>

@@ -37,6 +37,7 @@ func main() {
 }
 
 func resolveHandler(w http.ResponseWriter, r *http.Request) {
+	headerAccept := r.Header.Get("Accept")
 	q := r.URL.Query()
 	jfID := hyphenateGUID(q.Get("jf_id"))
 	imgID := q.Get("img_id")
@@ -90,14 +91,14 @@ func resolveHandler(w http.ResponseWriter, r *http.Request) {
 
 	final := normalize(raw)
 
-	streamImgFromImgproxy(w, final, size)
+	streamImgFromImgproxy(w, final, size, headerAccept)
 }
 
 func streamImgFromImgproxy(w http.ResponseWriter, final string, size string) {
 	enc := url.PathEscape(final)
 
 	imgURL := fmt.Sprintf(
-		"http://127.0.0.1:18889/insecure/%s/plain/local://%s@webp",
+		"http://127.0.0.1:18889/insecure/%s/plain/local://%s",
 		size,
 		enc,
 	)
@@ -107,8 +108,8 @@ func streamImgFromImgproxy(w http.ResponseWriter, final string, size string) {
 		http.Error(w, "bad upstream request", http.StatusInternalServerError)
 		return
 	}
-	// minimal upstream headers
-	req.Header.Set("Accept", "image/*")
+
+	req.Header.Set("Accept", accept)
 
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)

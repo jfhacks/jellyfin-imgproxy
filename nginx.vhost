@@ -62,8 +62,9 @@ server {
         proxy_set_header Host $host;
         # Go proxy to resolve and requests the image
         proxy_pass http://127.0.0.1:18887/resolve?type=image&jf_id=$jf_id&img_id=$img_id&img_type=$img_type&size=$resize;
+        proxy_set_header Accept $http_accept;
         proxy_cache jfimg;
-        proxy_cache_key $path_without_query:$resize:$arg_tag;
+        proxy_cache_key $path_without_query:$resize:$arg_tag:$http_accept;
         proxy_cache_valid 200 30d;
         proxy_cache_use_stale updating error timeout invalid_header http_500 http_502 http_503 http_504;
 
@@ -112,8 +113,9 @@ server {
         proxy_buffering on;
         proxy_set_header Host $host;
         proxy_pass http://127.0.0.1:18887/resolve?type=image&jf_id=$jf_id&img_type=$img_type&size=$resize;
+        proxy_set_header Accept $http_accept;
         proxy_cache jfimg;
-        proxy_cache_key $path_without_query:$resize:$arg_tag;
+        proxy_cache_key $path_without_query:$resize:$arg_tag:$http_accept;
         proxy_cache_valid 200 30d;
         proxy_cache_use_stale updating error timeout invalid_header http_500 http_502 http_503 http_504;
 
@@ -127,9 +129,10 @@ server {
 
         proxy_buffering on;
         add_header X-Cache-Status $upstream_cache_status;
-        proxy_pass http://127.0.0.1:18889/insecure/${resize}/plain/local://$arg_src@webp;
+        proxy_pass http://127.0.0.1:18889/insecure/${resize}/plain/local://$arg_src;
+        proxy_set_header Accept $http_accept;
         proxy_cache jfimg;
-        proxy_cache_key $path_without_query:$resize:$arg_tag;
+        proxy_cache_key $path_without_query:$resize:$arg_tag:$http_accept;
         proxy_cache_valid 200 30d;
         proxy_cache_use_stale updating error timeout invalid_header http_500 http_502 http_503 http_504;
 
