@@ -26,6 +26,13 @@ map "$w:$h:$mw:$mh" $resize {
     default                                "rs:fit:$w:$h:0:0";
 }
 
+# Get first match for cache reduce possible cache keys
+map $http_accept $accept_normalized {
+    "~*image/jxl"     "jxl";
+    "~*image/webp"    "webp";
+    "~*image/avif"    "avif";
+    default           "";
+}
 
 # Extract path without query for cache key - e.g. ignore quality from different clients and hardcode it.
 map $request_uri $path_without_query {
@@ -54,15 +61,17 @@ server {
         if ($h = "") { set $h 0; }
         set $mw $arg_maxWidth;
         if ($mw = "") { set $mw "0"; }
+        # Disabled because maxHeight behavior is not part of imgproxy. Sending width should work in most cases
         # set $mh $arg_maxHeight;
         # if ($mh = "") { set $mh 0; }
         set $mh 0;
 
+        proxy_buffering on;
         proxy_pass http://127.0.0.1:18887/resolve?type=image&jf_id=$jf_id&img_id=$img_id&img_type=$img_type&size=$resize;
         proxy_set_header Accept $http_accept;
         proxy_cache jfimg;
-        # Key that determants the cache
-        proxy_cache_key $path_without_query:$resize:$arg_tag:$http_accept;
+        # Key that determents the cache
+        proxy_cache_key $path_without_query:$resize:$arg_tag:$accept_normalized;
         proxy_cache_valid 200 30d;
         proxy_cache_use_stale updating error timeout invalid_header http_500 http_502 http_503 http_504;
 
