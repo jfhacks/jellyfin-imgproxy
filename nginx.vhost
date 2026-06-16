@@ -49,7 +49,7 @@ server {
 
     # Split first 2 HEX for folder structure of nginx
     location ~* ^/Items/(?<jf_id>[0-9a-f-]*)/Images/(?<img_type>Logo|Primary|Art|Thumb|Banner|Disc|Menu|Box|BoxRear|Backdrop|Chapter)/?(?<img_id>[0-9]*)? {
-        if ($request_method != GET) {
+        if ($request_method !~ ^(GET|HEAD)$) {
             return 404;
         }
 
