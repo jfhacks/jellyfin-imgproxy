@@ -69,6 +69,10 @@ func resolveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if imgID == "" {
+		imgID = "0"
+	}
+
 	switch imgType {
 	case "backdrop":
 		raw, err = queryBackdrop(jfID, ImageTypeMap[imgType], imgID)
